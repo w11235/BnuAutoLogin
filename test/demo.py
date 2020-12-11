@@ -5,6 +5,8 @@ from pathlib import Path
 import getpass
 from colorama import Fore, init
 import platform
+import execjs
+import base64
 # 初始化颜色控制
 init(autoreset=True)
 
@@ -14,7 +16,10 @@ class AutoLogin:
     def __init__(self):
 
         # 登录地址
-        self.login_url = "http://172.16.202.201:804/srun_portal_pc.php?ac_id=1&"
+        # self.login_url = "http://172.16.202.202:80/srun_portal_pc?ac_id=39&theme=bnu"
+        # self.login_url = "http://172.16.202.202"
+        self.challenge_url = "http://172.16.202.202/cgi-bin/get_challenge"
+        self.login_url = "http://172.16.202.202/cgi-bin/srun_portal"
         # 设置代理
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 SE 2.X MetaSr 1.0'
@@ -52,22 +57,69 @@ class AutoLogin:
     def login(self):
         """选择课程
         """
-        data = {
-            "action": "login",
-            "ac_id": 1,
-            "user_ip": "",
-            "nas_ip": "",
-            "user_mac": "",
-            "url": "",
-            "username": self.username,
-            "password": self.password
-        }
 
-        response = requests.post(self.login_url,
-                                 data=data,
-                                 headers=self.headers)
-        self.cookies = response.cookies.get_dict()
-        flag = self.cookies.get("login", None)
+        # 获取挑战/应答校验码
+        challenge_data = {
+            'username': self.username,
+            'ip': '172.24.71.200'
+        }
+        challenge_response = requests.get(self.challenge_url,
+                                          params=challenge_data,
+                                          json=True,
+                                          headers=self.headers)
+        # self.cookies = response.cookies.get_dict()
+        # flag = self.cookies.get("login", None)
+        crd = challenge_response.json()
+        print('challenge_response')
+        print(crd)
+
+        # 登录
+        ctx = execjs.compile(open('jquery.md5.js').read())
+        token = crd['challenge']
+        js_str = f'md5("{token}","{self.password}")'
+        hmd5 = ctx.eval(js_str)
+        password_hmd5 = "{MD5}" + hmd5
+
+        i_dv = {
+            "username": self.username,
+            "password": self.password,
+            "ip": "172.24.71.200",
+            "acid": 39,
+            'enc_ver': "srun_bx1"
+        }
+        i_dv = json.dumps(i_dv)
+        i = ctx.eval(f'xEncode({str(i_dv)}, "{token}")')
+        # i = ctx.eval(f'xEncode("1", "1")')
+        # info = "{SRBX1}" + base64.b64encode(i.encode('utf-8'))
+        info = "{SRBX1}" + base64.b64encode(i.encode('utf-8')).decode()
+        print(info)
+        s
+        data = {
+            "ac_id": 39,
+            "action": "login",
+            "chksum": "",
+            "double_stack": 0,
+            "info": i,
+            "ip": '172.24.71.200',
+            "n": 200,
+            "name": "Windows",
+            "os": "Windows 10",
+            "username": self.username,
+            "password": password_hmd5,
+            "type": 1,
+        }
+        print('+++++++++++++')
+        print(data)
+        login_response = requests.get(self.login_url,
+                                      data=data,
+                                      #   params=data,
+                                      json=True,
+                                      headers=self.headers)
+        print('login_response')
+        print(login_response.text)
+
+        s
+        # print(flag)
         if flag:
             # 登录成功,打印登录信息
             self.get_online_info()
@@ -201,4 +253,9 @@ def main():
 
 if __name__ == "__main__":
 
-    main()
+    # main()
+    aut = AutoLogin()
+    username = '11312018303'
+    password = 'qqwert1123'
+    aut.reset_login_info(username, password)
+    aut.login()

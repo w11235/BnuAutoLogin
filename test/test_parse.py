@@ -67,8 +67,8 @@ class Login:
         # 获取效验字符串
         chkstr = self._get_chkstr(token, password_hmd5, info)
 
-        # print('crd')
-        # print(crd)
+        print('crd')
+        print(crd)
         # print('password_hmd5')
         # print(password_hmd5)
         # print('info')
@@ -121,8 +121,8 @@ class Login:
         '''
         verify_ctx = self._get_js_context('verify.js')
         # js_str = f'md5("{token}","{self.password}")'
-        js_str = verify_ctx.call('md5', self.password, token)
-        hmd5 = verify_ctx.eval(js_str)
+        # hmd5 = verify_ctx.eval(js_str)
+        hmd5 = verify_ctx.call('md5', self.password, token)
         password_hmd5 = "{MD5}" + hmd5
         return password_hmd5
 
@@ -162,15 +162,14 @@ class Login:
 
 if __name__ == '__main__':
 
-    import time
-
     username = '11312018303'
     password = 'qqwert1123'
     lg = Login(username, password)
-    # lg.login()
+    lg.login()
 
-    count = 5
-    while count >= 0:
-        time.sleep(5)
-        lg.login()
-        count -= 1
+    # import time
+    # count = 5
+    # while count >= 0:
+    #     time.sleep(5)
+    #     lg.login()
+    #     count -= 1

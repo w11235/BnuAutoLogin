@@ -2,13 +2,11 @@ import execjs
 import requests
 import json
 
-# ctx = execjs.compile(open('base64.js').read())
-# print(ctx.call('encode', 'test'))
-ctx = execjs.compile(open('verify.js').read())
-print(ctx.call('sha1', "I'm Persian."))
+# ctx = execjs.compile(open('verify.js').read())
+# print(ctx.call('sha1', "I'm Persian."))
 
 # 登录网址
-LOGIN_URL = "http://172.16.202.202/cgi-bin/get_challenge"
+LOGIN_URL = "http://172.16.202.202//cgi-bin/srun_portal"
 # 挑战/应答校验码网址
 CHALLENGE_URL = "http://172.16.202.202/cgi-bin/get_challenge"
 # 代理信息
@@ -91,7 +89,7 @@ class Login:
         Args:
             path (str): js文件路径
         '''
-        ctx = execjs.compile(open('verify.js').read())
+        ctx = execjs.compile(open(path).read())
         return ctx
 
     def _get_password_hmd5(self, token: str)->str:
@@ -104,7 +102,8 @@ class Login:
             str: password_hmd5
         '''
         verify_ctx = self._get_js_context('verify.js')
-        js_str = f'md5("{token}","{self.password}")'
+        # js_str = f'md5("{token}","{self.password}")'
+        js_str = verify_ctx.call('md5', self.password, token)
         hmd5 = verify_ctx.eval(js_str)
         password_hmd5 = "{MD5}" + hmd5
         return password_hmd5

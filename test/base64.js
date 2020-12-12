@@ -71,7 +71,7 @@ function decode( s ) {
 function _getbyte( s, i ) {
     var x = s.charCodeAt( i );
 
-    if ( x > 255 ) {
+    if ( x > 65536 ) {
     throw "INVALID_CHARACTER_ERR: DOM Exception 5";
     }
     

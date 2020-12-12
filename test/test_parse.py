@@ -2,6 +2,8 @@ import execjs
 import requests
 import json
 
+# ctx = execjs.compile(open('base64.js').read())
+# print(ctx.call('encode', 'test'))
 # ctx = execjs.compile(open('verify.js').read())
 # print(ctx.call('sha1', "I'm Persian."))
 
@@ -51,7 +53,7 @@ class Login:
         # 获取info值
         info = self._get_info(token)
         # 获取效验字符串
-        chkstr = self._get_chkstr(self, token, password_hmd5, info)
+        chkstr = self._get_chkstr(token, password_hmd5, info)
 
         print('password_hmd5')
         print(password_hmd5)
@@ -74,14 +76,15 @@ class Login:
             'name': "Windows",
             'double_stack': 0
         }
-        login_response = requests.get(self.login_url,
+        login_response = requests.get(LOGIN_URL,
                                       #   data=data,
                                       params=data,
                                       json=True,
-                                      headers=self.headers)
+                                      headers=HEADER)
         print('login_response')
         print(login_response.text)
-        s
+        print(login_response.cookies.get_dict())
+        # s
 
     def _get_js_context(self, path):
         '''获取js上下文
@@ -124,6 +127,8 @@ class Login:
         base64_ctx = self._get_js_context('base64.js')
         # i = verify_ctx.eval(f'xEncode({str(i_dv)}, "{token}")')
         i = verify_ctx.call('xEncode', str(i_dv), token)
+        print('i')
+        print(i)
         info = "{SRBX1}" + base64_ctx.call('encode', i)
         return info
 
@@ -132,10 +137,10 @@ class Login:
         '''
         chkstr = token + self.username
         chkstr += token + hmd5
-        chkstr += token + self.acid
+        chkstr += token + str(self.acid)
         chkstr += token + self.ip
-        chkstr += token + self.n
-        chkstr += token + self.type
+        chkstr += token + str(self.n)
+        chkstr += token + str(self.type)
         chkstr += token + info
         verify_ctx = self._get_js_context('verify.js')
         chkstr = verify_ctx.call('sha1', chkstr)
@@ -144,4 +149,7 @@ class Login:
 
 if __name__ == '__main__':
 
-    pass
+    username = '11312018303'
+    password = 'qqwert1123'
+    lg = Login(username, password)
+    lg.login()

@@ -81,6 +81,7 @@
     }
 
     function getChallenge(url, data, callback) {
+        // challengeCallback
         return $.get(url + "/cgi-bin/get_challenge", data, callback, "jsonp");
     }
 
@@ -104,6 +105,7 @@
      * SRUN Portal Auth CGI
      */
     function srunPortal(url, data, callback) {
+        // authCallback
         return $.get(url + "/cgi-bin/srun_portal", data, callback, "jsonp");
     }
 

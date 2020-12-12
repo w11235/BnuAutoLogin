@@ -1,20 +1,29 @@
 import execjs
 import requests
 import json
-
+import time
 # ctx = execjs.compile(open('base64.js').read())
 # print(ctx.call('encode', 'test'))
 # ctx = execjs.compile(open('verify.js').read())
 # print(ctx.call('sha1', "I'm Persian."))
 
 # 登录网址
-LOGIN_URL = "http://172.16.202.202/cgi-bin/get_challenge"
+LOGIN_URL = "http://172.16.202.202/cgi-bin/srun_portal"
+LOGIN_URL = "http://172.16.202.202/cgi-bin/srun_portal/?callback=authCallback"
 # 挑战/应答校验码网址
+CHALLENGE_URL = "http://172.16.202.202/cgi-bin/get_challenge/?callback=challengeCallback"
 CHALLENGE_URL = "http://172.16.202.202/cgi-bin/get_challenge"
 # 代理信息
 HEADER = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 SE 2.X MetaSr 1.0'
 }
+
+
+# url = 'http://www.neeq.com.cn/newShareController/infoResult.do?callback=jQuery211_{}&statetypes%5B%5D=&page=0&companyCode=&isNewThree=1&sortfield=purchaseDate&sorttype=desc&needFields%5B%5D=id&needFields%5B%5D=stockCode&needFields%5B%5D=stockName&needFields%5B%5D=initialIssueAmount&needFields%5B%5D=enquiryType&needFields%5B%5D=issuePrice&needFields%5B%5D=peRatio&needFields%5B%5D=purchaseDate&needFields%5B%5D=issueResultDate&needFields%5B%5D=enterPremiumDate'.format(str(timestamp)[                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    #   : 13])
+
+# callback = 'jQuery112401933001730658317_1607708809380'
+# print(time.time()*1000)
+# s
 
 
 class Login:
@@ -40,12 +49,15 @@ class Login:
         # 获取挑战/应答校验码
         challenge_data = {
             'username': self.username,
-            'ip': '172.24.71.200'
+            'ip': self.ip,
         }
         challenge_response = requests.get(CHALLENGE_URL,
                                           params=challenge_data,
                                           json=True,
                                           headers=HEADER)
+
+        # print('challenge_response')
+        # print(challenge_response.text)
         crd = challenge_response.json()
         token = crd['challenge']
         # 获取密码的md5值
@@ -55,12 +67,14 @@ class Login:
         # 获取效验字符串
         chkstr = self._get_chkstr(token, password_hmd5, info)
 
-        print('password_hmd5')
-        print(password_hmd5)
-        print('info')
-        print(info)
-        print('chkstr')
-        print(chkstr)
+        # print('crd')
+        # print(crd)
+        # print('password_hmd5')
+        # print(password_hmd5)
+        # print('info')
+        # print(info)
+        # print('chkstr')
+        # print(chkstr)
 
         data = {
             'action': "login",
@@ -76,6 +90,8 @@ class Login:
             'name': "Windows",
             'double_stack': 0
         }
+        # data = {}
+        print(data)
         login_response = requests.get(LOGIN_URL,
                                       #   data=data,
                                       params=data,
@@ -83,7 +99,6 @@ class Login:
                                       headers=HEADER)
         print('login_response')
         print(login_response.text)
-        print(login_response.cookies.get_dict())
         # s
 
     def _get_js_context(self, path):
@@ -126,8 +141,6 @@ class Login:
         base64_ctx = self._get_js_context('base64.js')
         # i = verify_ctx.eval(f'xEncode({str(i_dv)}, "{token}")')
         i = verify_ctx.call('xEncode', str(i_dv), token)
-        print('i')
-        print(i)
         info = "{SRBX1}" + base64_ctx.call('encode', i)
         return info
 
@@ -148,7 +161,15 @@ class Login:
 
 if __name__ == '__main__':
 
+    import time
+
     username = '11312018303'
     password = 'qqwert1123'
     lg = Login(username, password)
-    lg.login()
+    # lg.login()
+
+    count = 5
+    while count >= 0:
+        time.sleep(5)
+        lg.login()
+        count -= 1

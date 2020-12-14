@@ -380,18 +380,18 @@
                 data.password = "{MD5}" + hmd5;
             }
             var params = {
-                action: "login",
-                username: username,
-                password: data.password,
                 ac_id: data.ac_id,
-                ip: data.ip || response.client_ip,
+                action: "login",
                 chksum: chksum(chkstr),
+                double_stack: data.double_stack,
                 info: i,
+                ip: data.ip || response.client_ip,
                 n: n,
-                type: type,
-                os: os.device,
                 name: os.platform,
-                double_stack: data.double_stack
+                os: os.device,
+                password: data.password,
+                type: type,
+                username: username,
             };
             var authCallback = function (resp) {
                 if (resp.error == "ok") {

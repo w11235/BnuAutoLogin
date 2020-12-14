@@ -1,29 +1,19 @@
 import execjs
 import requests
 import json
-import time
-# ctx = execjs.compile(open('base64.js').read())
+# base64_ctx = execjs.compile(open('base64.js').read())
 # print(ctx.call('encode', 'test'))
-# ctx = execjs.compile(open('verify.js').read())
-# print(ctx.call('sha1', "I'm Persian."))
 
 # 登录网址
-LOGIN_URL = "http://172.16.202.202/cgi-bin/srun_portal"
-LOGIN_URL = "http://172.16.202.202/cgi-bin/srun_portal/?callback=authCallback"
+LOGIN_URL = "http://gw.bnu.edu.cn/cgi-bin/srun_portal?callback=what'up man"
 # 挑战/应答校验码网址
-CHALLENGE_URL = "http://172.16.202.202/cgi-bin/get_challenge/?callback=challengeCallback"
 CHALLENGE_URL = "http://172.16.202.202/cgi-bin/get_challenge"
 # 代理信息
 HEADER = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 SE 2.X MetaSr 1.0'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 SE 2.X MetaSr 1.0', 'Connection': 'keep-alive'
 }
 
-
-# url = 'http://www.neeq.com.cn/newShareController/infoResult.do?callback=jQuery211_{}&statetypes%5B%5D=&page=0&companyCode=&isNewThree=1&sortfield=purchaseDate&sorttype=desc&needFields%5B%5D=id&needFields%5B%5D=stockCode&needFields%5B%5D=stockName&needFields%5B%5D=initialIssueAmount&needFields%5B%5D=enquiryType&needFields%5B%5D=issuePrice&needFields%5B%5D=peRatio&needFields%5B%5D=purchaseDate&needFields%5B%5D=issueResultDate&needFields%5B%5D=enterPremiumDate'.format(str(timestamp)[                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    #   : 13])
-
-# callback = 'jQuery112401933001730658317_1607708809380'
-# print(time.time()*1000)
-# s
+s = requests.Session()
 
 
 class Login:
@@ -34,7 +24,7 @@ class Login:
         self.password = password
         # //TODO: 获取本地ip
         self.ip = "172.24.71.200"
-        self.acid = 39
+        self.acid = '39'
         self.n = 200
         self.type = 1
 
@@ -51,53 +41,41 @@ class Login:
             'username': self.username,
             'ip': self.ip,
         }
-        challenge_response = requests.get(CHALLENGE_URL,
-                                          params=challenge_data,
-                                          json=True,
-                                          headers=HEADER)
 
-        # print('challenge_response')
-        # print(challenge_response.text)
+        challenge_response = s.get(CHALLENGE_URL,
+                                   params=challenge_data,
+                                   json=True,
+                                   headers=HEADER)
         crd = challenge_response.json()
         token = crd['challenge']
-        # 获取密码的md5值
-        password_hmd5 = self._get_password_hmd5(token)
+
         # 获取info值
         info = self._get_info(token)
+        # 获取密码的md5值
+        password_hmd5 = self._get_password_hmd5(token)
         # 获取效验字符串
-        chkstr = self._get_chkstr(token, password_hmd5, info)
-
-        print('crd')
-        print(crd)
-        # print('password_hmd5')
-        # print(password_hmd5)
-        # print('info')
-        # print(info)
-        # print('chkstr')
-        # print(chkstr)
+        chkstr = self._get_chkstr(token, info)
 
         data = {
-            'action': "login",
-            'username': self.username,
-            'password': password_hmd5,
             'ac_id': self.acid,
-            'ip': self.ip,
+            'action': "login",
             'chksum': chkstr,
             'info': info,
+            'ip': self.ip,
             'n': self.n,
+            'password': password_hmd5,
             'type': self.type,
-            'os': 'Windows 10',
+            'username': self.username,
+            # Next not important parameters
+            'double_stack': 0,
             'name': "Windows",
-            'double_stack': 0
+            'os': 'Windows 10',
         }
-        # data = {}
-        print(data)
-        login_response = requests.get(LOGIN_URL,
-                                      #   data=data,
-                                      params=data,
-                                      json=True,
-                                      headers=HEADER)
+        login_response = s.get(LOGIN_URL,
+                               params=data,
+                               headers=HEADER)
         print('login_response')
+        print(login_response)
         print(login_response.text)
         # s
 
@@ -110,7 +88,7 @@ class Login:
         ctx = execjs.compile(open(path).read())
         return ctx
 
-    def _get_password_hmd5(self, token: str)->str:
+    def _get_password_hmd5(self, token: str) -> str:
         '''获取密码的md5值
 
         Args:
@@ -120,10 +98,8 @@ class Login:
             str: password_hmd5
         '''
         verify_ctx = self._get_js_context('verify.js')
-        # js_str = f'md5("{token}","{self.password}")'
-        # hmd5 = verify_ctx.eval(js_str)
-        hmd5 = verify_ctx.call('md5', self.password, token)
-        password_hmd5 = "{MD5}" + hmd5
+        self.hmd5 = verify_ctx.call('md5', self.password, token)
+        password_hmd5 = "{MD5}" + self.hmd5
         return password_hmd5
 
     def _get_info(self, token: str):
@@ -140,16 +116,16 @@ class Login:
         )
         verify_ctx = self._get_js_context('verify.js')
         base64_ctx = self._get_js_context('base64.js')
-        # i = verify_ctx.eval(f'xEncode({str(i_dv)}, "{token}")')
-        i = verify_ctx.call('xEncode', str(i_dv), token)
+        i = verify_ctx.call('xEncode', i_dv.replace(' ', ''), token).encode(
+            'gbk').decode('utf-8')
         info = "{SRBX1}" + base64_ctx.call('encode', i)
         return info
 
-    def _get_chkstr(self, token, hmd5, info):
+    def _get_chkstr(self, token, info):
         '''获取效验字符串
         '''
         chkstr = token + self.username
-        chkstr += token + hmd5
+        chkstr += token + self.hmd5
         chkstr += token + str(self.acid)
         chkstr += token + self.ip
         chkstr += token + str(self.n)
@@ -163,7 +139,7 @@ class Login:
 if __name__ == '__main__':
 
     username = '11312018303'
-    password = 'qqwert1123'
+    password = ''
     lg = Login(username, password)
     lg.login()
 

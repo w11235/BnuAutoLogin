@@ -9,7 +9,7 @@ root_path = Path(os.path.dirname(os.path.dirname(
 # 项目目录
 project_path = root_path /"BnuAutoLogin"
 # 数据库目录
-DATA_DIR = project_path / "db"
+DATA_DIR = project_path / "src"
 # logs目录
 LOGS_DIR = project_path / "logs"
 

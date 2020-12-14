@@ -10,8 +10,10 @@ def login():
     else:
         username = request.form.get('username')
         password = request.form.get('password')
+        print(username,password)
         try:
-            init_manager(username, password)
+            # 待处理登录
+            pass
         except Exception as e:
             return render_template('lg_login.html', error="用户名或密码错误")
         return redirect(url_for('lg.success'))

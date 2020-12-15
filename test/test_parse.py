@@ -1,6 +1,8 @@
 import execjs
 import requests
-import json
+import json    
+import socket
+
 # base64_ctx = execjs.compile(open('base64.js').read())
 # print(ctx.call('encode', 'test'))
 
@@ -23,7 +25,11 @@ class Login:
         self.username = username
         self.password = password
         # //TODO: 获取本地ip
-        self.ip = "172.24.71.200"
+        # 获取主机名
+        hostname = socket.gethostname()
+        #获取IP
+        self.ip = socket.gethostbyname(hostname)
+        # self.ip = "172.24.71.200"
         self.acid = '39'
         self.n = 200
         self.type = 1
@@ -143,9 +149,5 @@ if __name__ == '__main__':
     lg = Login(username, password)
     lg.login()
 
-    # import time
-    # count = 5
-    # while count >= 0:
-    #     time.sleep(5)
-    #     lg.login()
-    #     count -= 1
+
+

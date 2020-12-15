@@ -139,7 +139,7 @@ class Login:
 if __name__ == '__main__':
 
     username = '11312018303'
-    password = ''
+    password =
     lg = Login(username, password)
     lg.login()
 
